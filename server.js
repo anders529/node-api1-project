@@ -26,9 +26,31 @@ server.post('/api/users', (req, res) => {
     users.push(newUser)
     res.status(201).json(newUser)
 })
+server.delete('/api/users/:id', (req, res) => {
+    const id = req.params.id;
+    users.remove(id)
+    .then(user => {
+        if (user) {res.json(user);}
+        else {res.status(404).json({message: 'The user with the specified ID does not exist.'});
+        }
+    })
+    .catch(err => {res.status(500).json({error: 'The user could not be removed'});
+    });
+});
 server.put('/api/users/:id', (req, res) => {
-    const index = users.findIndex(u => u.id == req.params.id)
-})
+    const id = req.params.id;
+    const changes = req.body;
+    users.update(id, changes)
+    .then(user => {
+        if(!user) {res.status(404).json({message: 'The user with the specified ID does not exist.'});
+        } else if (changes.name && changes.bio) {res.json(changes);}
+          else {res.status(400).json({errorMessage: 'Please provide name and bio for the user.'});
+        }
+    })
+    .catch(error => {
+        res.status(500).json({error: 'The user information could not be modified.'});
+    });
+});
 server.listen(port, () => {
     console.log(`server started at ${port}`)
 })
